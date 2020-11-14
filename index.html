@@ -1,0 +1,746 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>CSS 3D Clouds</title>
+    <link
+      href="http://fonts.googleapis.com/css?family=Lato:900"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="http://fonts.googleapis.com/css?family=Open+Sans:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="buttons.css" rel="stylesheet" type="text/css" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        color: #eee;
+        text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+        font-family: "Open Sans", sans-serif;
+        font-size: 13px;
+        line-height: 16px;
+        overflow: hidden;
+      }
+      #viewport {
+        -webkit-perspective: 1000;
+        -moz-perspective: 1000px;
+        -o-perspective: 1000;
+        perspective: 1000px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        background-image: linear-gradient(
+          bottom,
+          rgb(69, 132, 180) 28%,
+          rgb(31, 71, 120) 64%
+        );
+        background-image: -o-linear-gradient(
+          bottom,
+          rgb(69, 132, 180) 28%,
+          rgb(31, 71, 120) 64%
+        );
+        background-image: -moz-linear-gradient(
+          bottom,
+          rgb(69, 132, 180) 28%,
+          rgb(31, 71, 120) 64%
+        );
+        background-image: -webkit-linear-gradient(
+          bottom,
+          rgb(69, 132, 180) 28%,
+          rgb(31, 71, 120) 64%
+        );
+        background-image: -ms-linear-gradient(
+          bottom,
+          rgb(69, 132, 180) 28%,
+          rgb(31, 71, 120) 64%
+        );
+
+        background-image: -webkit-gradient(
+          linear,
+          left bottom,
+          left top,
+          color-stop(0.28, rgb(69, 132, 180)),
+          color-stop(0.64, rgb(31, 71, 120))
+        );
+      }
+
+      #world {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        margin-left: -256px;
+        margin-top: -256px;
+        height: 512px;
+        width: 512px;
+        //border: 1px solid rgb( 255, 0, 0 );
+        -webkit-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        pointer-events: none;
+      }
+
+      #world div {
+        -webkit-transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        -o-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+      }
+
+      .cloudBase {
+        //border: 1px solid #ff00ff;
+        position: absolute;
+        left: 256px;
+        top: 256px;
+        width: 20px;
+        height: 20px;
+        margin-left: -10px;
+        margin-top: -10px;
+      }
+
+      .cloudLayer {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 256px;
+        height: 256px;
+        margin-left: -128px;
+        margin-top: -128px;
+        -webkit-transition: opacity 0.5s ease-out;
+        -moz-transition: opacity 0.5s ease-out;
+        -o-transition: opacity 0.5s ease-out;
+        transition: opacity 0.5s ease-out;
+      }
+
+      #options {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 10px;
+        padding: 20px;
+        width: 400px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border-radius: 5px;
+      }
+
+      #optionsContent {
+        margin-top: 20px;
+        -webkit-transition: all 1s ease-out;
+        -moz-transition: all 1s ease-out;
+        -o-transition: all 1s ease-out;
+        transition: all 1s ease-out;
+      }
+
+      h1 {
+        font-family: "Lato", sans-serif;
+      }
+
+      h2 {
+        font-family: "Lato", sans-serif;
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 20px;
+      }
+
+      .actions {
+        margin-bottom: 20px;
+      }
+
+      #textureList li {
+        clear: both;
+        list-style-type: none;
+        position: relative;
+        height: 35px;
+        padding-top: 10px;
+      }
+
+      #textureList li span {
+        text-transform: capitalize;
+      }
+
+      #textureList div {
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      #textureList li a {
+        float: left;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      #textureControls {
+        display: none;
+      }
+
+      #closeBtn {
+        position: absolute;
+        right: 15px;
+        top: 10px;
+      }
+
+      .presets {
+      }
+
+      .presets a {
+        float: left;
+      }
+
+      .nope {
+        text-decoration: line-through;
+      }
+
+      :-moz-full-screen #options {
+        display: none;
+      }
+      :-webkit-full-screen #options {
+        display: none;
+      }
+      :full-screen #options {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="viewport">
+      <div id="world"></div>
+    </div>
+
+    <div id="options">
+      <a href="#" id="closeBtn" class="button">X</a>
+      <h1>CSS3D Clouds</h1>
+      <div id="optionsContent">
+        <p>
+          An experiment on creating <span class="nope">volumetric</span> 3d-like
+          clouds with CSS3 3D Transforms and a bit of Javascript.
+        </p>
+        <p>
+          <a
+            class="button"
+            rel="external"
+            href="http://www.clicktorelease.com/tutorials/css3dclouds"
+            >Check out the tutorial here!</a
+          >
+        </p>
+        <p>
+          Move the <b>mouse to rotate</b> around and
+          <b>mouse wheel to zoom</b> in and out. Hit <b>space to generate</b> a
+          new cloud. Works on <b>Firefox</b> (faster if Nightly),
+          <b>Chrome</b> and <b>Safari</b>.
+        </p>
+        <div class="actions">
+          <a class="button" href="#" id="generateBtn">Generate clouds</a>
+          <a class="button" href="#" id="showTextureControlsBtn"
+            >Show controls</a
+          >
+          <a class="button" href="#" id="fullscreenBtn">Go fullscreen</a>
+        </div>
+        <div id="textureControls">
+          <h2>Texture list</h2>
+          <p>
+            Select one or more textures to create clouds. The more the merrier!
+            Click <b>Generate</b> to update.
+          </p>
+          <ul id="textureList"></ul>
+        </div>
+        <h2>Presets</h2>
+        <div class="presets">
+          <a href="#" class="left button" id="cloudsPreset">Clouds</a>
+          <a href="#" class="middle button" id="stormPreset">Storm</a>
+          <a href="#" class="middle button" id="boomPreset">Boom</a>
+          <a href="#" class="right button" id="bayPreset">Michael Bay</a>
+        </div>
+        <div style="clear: both; height: 20px; display: block"></div>
+        <h2>Credits</h2>
+        <p>
+          Coded by Jaume Sánchez (<a
+            href="http://twitter.com/thespite"
+            rel="external"
+            >@thespite</a
+          >)<br />
+          Code available in
+          <a href="https://github.com/spite/CSS3DClouds" rel="external"
+            >GitHub</a
+          ><br /><br />
+          Inspired on Mr.doob's
+          <a href="http://mrdoob.com/131/Clouds" rel="external">WebGL clouds</a>
+          and <br />Mark J. Harris'
+          <a
+            href="http://www.markmark.net/PDFs/RTCloudsForGames_HarrisGDC2002.pdf"
+            rel="external"
+            >Real-Time Cloud Rendering for Games</a
+          >.<br /><br />
+          Fonts Open Sans and Lato are from
+          <a href="http://www.google.com/webfonts" rel="external"
+            >Google Web Fonts</a
+          >.<br />
+          Textures are property of their respective owners.
+        </p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var lastTime = 0;
+        var vendors = ["ms", "moz", "webkit", "o"];
+        for (
+          var x = 0;
+          x < vendors.length && !window.requestAnimationFrame;
+          ++x
+        ) {
+          window.requestAnimationFrame =
+            window[vendors[x] + "RequestAnimationFrame"];
+          window.cancelRequestAnimationFrame =
+            window[vendors[x] + "CancelRequestAnimationFrame"];
+        }
+
+        if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function (callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function () {
+              callback(currTime + timeToCall);
+            }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+          };
+
+        if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function (id) {
+            clearTimeout(id);
+          };
+      })();
+
+      var layers = [],
+        objects = [],
+        textures = [],
+        world = document.getElementById("world"),
+        viewport = document.getElementById("viewport"),
+        d = 0,
+        p = 400,
+        worldXAngle = 0,
+        worldYAngle = 0,
+        computedWeights = [];
+
+      var links = document.querySelectorAll("a[rel=external]");
+      for (var j = 0; j < links.length; j++) {
+        var a = links[j];
+        a.addEventListener(
+          "click",
+          function (e) {
+            window.open(this.href, "_blank");
+            e.preventDefault();
+          },
+          false
+        );
+      }
+
+      viewport.style.webkitPerspective = p;
+      viewport.style.MozPerspective = p + "px";
+      viewport.style.oPerspective = p;
+      viewport.style.perspective = p;
+
+      textures = [
+        { name: "white cloud", file: "cloud.png", opacity: 1, weight: 0 },
+        { name: "dark cloud", file: "darkCloud.png", opacity: 1, weight: 0 },
+        { name: "smoke cloud", file: "smoke.png", opacity: 1, weight: 0 },
+        { name: "explosion", file: "explosion.png", opacity: 1, weight: 0 },
+        { name: "explosion 2", file: "explosion2.png", opacity: 1, weight: 0 },
+        { name: "box", file: "box.png", opacity: 1, weight: 0 },
+      ];
+
+      var el = document.getElementById("textureList");
+      for (var j = 0; j < textures.length; j++) {
+        var li = document.createElement("li");
+        var span = document.createElement("span");
+        span.textContent = textures[j].name;
+        var div = document.createElement("div");
+        div.className = "buttons";
+        var btnNone = document.createElement("a");
+        btnNone.setAttribute("id", "btnNone" + j);
+        btnNone.setAttribute("href", "#");
+        btnNone.textContent = "None";
+        btnNone.className = "left button";
+        var btnFew = document.createElement("a");
+        btnFew.setAttribute("id", "btnFew" + j);
+        btnFew.setAttribute("href", "#");
+        btnFew.textContent = "A few";
+        btnFew.className = "middle button";
+        var btnNormal = document.createElement("a");
+        btnNormal.setAttribute("id", "btnNormal" + j);
+        btnNormal.setAttribute("href", "#");
+        btnNormal.textContent = "Some";
+        btnNormal.className = "middle button";
+        var btnLot = document.createElement("a");
+        btnLot.setAttribute("id", "btnLot" + j);
+        btnLot.setAttribute("href", "#");
+        btnLot.textContent = "A lot";
+        btnLot.className = "right button";
+
+        (function (id) {
+          btnNone.addEventListener("click", function () {
+            setTextureUsage(id, "None");
+          });
+          btnFew.addEventListener("click", function () {
+            setTextureUsage(id, "Few");
+          });
+          btnNormal.addEventListener("click", function () {
+            setTextureUsage(id, "Normal");
+          });
+          btnLot.addEventListener("click", function () {
+            setTextureUsage(id, "Lot");
+          });
+        })(j);
+
+        li.appendChild(span);
+        div.appendChild(btnNone);
+        div.appendChild(btnFew);
+        div.appendChild(btnNormal);
+        div.appendChild(btnLot);
+        li.appendChild(div);
+        el.appendChild(li);
+
+        setTextureUsage(j, "None");
+      }
+
+      setTextureUsage(0, "Lot");
+      generate();
+
+      document
+        .getElementById("cloudsPreset")
+        .addEventListener("click", function (e) {
+          setTextureUsage(0, "Lot");
+          setTextureUsage(1, "None");
+          setTextureUsage(2, "None");
+          setTextureUsage(3, "None");
+          setTextureUsage(4, "None");
+          setTextureUsage(5, "None");
+          generate();
+          e.preventDefault();
+        });
+
+      document
+        .getElementById("stormPreset")
+        .addEventListener("click", function (e) {
+          setTextureUsage(0, "None");
+          setTextureUsage(1, "None");
+          setTextureUsage(2, "Lot");
+          setTextureUsage(3, "None");
+          setTextureUsage(4, "None");
+          setTextureUsage(5, "None");
+          generate();
+          e.preventDefault();
+        });
+
+      document
+        .getElementById("boomPreset")
+        .addEventListener("click", function (e) {
+          setTextureUsage(0, "None");
+          setTextureUsage(1, "None");
+          setTextureUsage(2, "Lot");
+          setTextureUsage(3, "Few");
+          setTextureUsage(4, "None");
+          setTextureUsage(5, "None");
+          generate();
+          e.preventDefault();
+        });
+
+      document
+        .getElementById("bayPreset")
+        .addEventListener("click", function (e) {
+          setTextureUsage(0, "None");
+          setTextureUsage(1, "None");
+          setTextureUsage(2, "Normal");
+          setTextureUsage(3, "Lot");
+          setTextureUsage(4, "Lot");
+          setTextureUsage(5, "None");
+          generate();
+          e.preventDefault();
+        });
+
+      function setTextureUsage(id, mode) {
+        var modes = ["None", "Few", "Normal", "Lot"];
+        var weights = { None: 0, Few: 0.3, Normal: 0.7, Lot: 1 };
+        for (var j = 0; j < modes.length; j++) {
+          var el = document.getElementById("btn" + modes[j] + id);
+          el.className = el.className.replace(" active", "");
+          if (modes[j] == mode) {
+            el.className += " active";
+            textures[id].weight = weights[mode];
+          }
+        }
+      }
+
+      var optionsContent = document.getElementById("optionsContent");
+      var el = document
+        .getElementById("closeBtn")
+        .addEventListener("click", function (e) {
+          if (optionsContent.style.display != "block") {
+            optionsContent.style.display = "block";
+          } else {
+            optionsContent.style.display = "none";
+          }
+          e.preventDefault();
+        });
+
+      var textureControls = document.getElementById("textureControls");
+      var el = document
+        .getElementById("showTextureControlsBtn")
+        .addEventListener("click", function (e) {
+          if (textureControls.style.display != "block") {
+            textureControls.style.display = "block";
+          } else {
+            textureControls.style.display = "none";
+          }
+          e.preventDefault();
+        });
+
+      var el = document.getElementById("fullscreenBtn");
+      if (el) {
+        var options = document.getElementById("options");
+        el.addEventListener(
+          "click",
+          function (e) {
+            if (document.body.webkitRequestFullScreen) {
+              document.body.onwebkitfullscreenchange = function (e) {
+                //	options.style.display = 'none';
+                document.body.style.width = window.innerWidth + "px";
+                document.body.style.height = window.innerHeight + "px";
+                document.body.onwebkitfullscreenchange = function () {
+                  //		options.style.display = 'block';
+                };
+              };
+              document.body.webkitRequestFullScreen();
+            }
+            if (document.body.mozRequestFullScreen) {
+              /*document.body.onmozfullscreenchange = function( e ) {
+					options.style.display = 'none';
+					document.body.onmozfullscreenchange = function( e ) {
+						options.style.display = 'block';
+					};
+				};*/
+              document.body.mozRequestFullScreen();
+            }
+            e.preventDefault();
+          },
+          false
+        );
+      }
+
+      function createCloud() {
+        var div = document.createElement("div");
+        div.className = "cloudBase";
+        var x = 256 - Math.random() * 512;
+        var y = 256 - Math.random() * 512;
+        var z = 256 - Math.random() * 512;
+        var t =
+          "translateX( " +
+          x +
+          "px ) translateY( " +
+          y +
+          "px ) translateZ( " +
+          z +
+          "px )";
+        div.style.webkitTransform = div.style.MozTransform = div.style.oTransform = div.style.transform = t;
+        world.appendChild(div);
+
+        for (var j = 0; j < 5 + Math.round(Math.random() * 10); j++) {
+          var cloud = document.createElement("img");
+          cloud.style.opacity = 0;
+          var r = Math.random();
+          var src = "troll.png";
+          for (var k = 0; k < computedWeights.length; k++) {
+            if (r >= computedWeights[k].min && r <= computedWeights[k].max) {
+              (function (img) {
+                img.addEventListener("load", function () {
+                  img.style.opacity = 0.8;
+                });
+              })(cloud);
+              src = computedWeights[k].src;
+            }
+          }
+          if (computedWeights.length === 0) {
+            cloud.style.opacity = 0.8;
+          }
+          cloud.setAttribute("src", src);
+          cloud.className = "cloudLayer";
+
+          var x = 256 - Math.random() * 512;
+          var y = 256 - Math.random() * 512;
+          var z = 100 - Math.random() * 200;
+          var a = Math.random() * 360;
+          var s = 0.25 + Math.random();
+          x *= 0.2;
+          y *= 0.2;
+          cloud.data = {
+            x: x,
+            y: y,
+            z: z,
+            a: a,
+            s: s,
+            speed: 0.1 * Math.random(),
+          };
+          var t =
+            "translateX( " +
+            x +
+            "px ) translateY( " +
+            y +
+            "px ) translateZ( " +
+            z +
+            "px ) rotateZ( " +
+            a +
+            "deg ) scale( " +
+            s +
+            " )";
+          cloud.style.webkitTransform = cloud.style.MozTransform = cloud.style.oTransform = cloud.style.transform = t;
+
+          div.appendChild(cloud);
+          layers.push(cloud);
+        }
+
+        return div;
+      }
+
+      window.addEventListener("mousewheel", onContainerMouseWheel);
+      window.addEventListener("DOMMouseScroll", onContainerMouseWheel);
+      //window.addEventListener( 'deviceorientation', orientationhandler, false );
+      //window.addEventListener( 'MozOrientation', orientationhandler, false );
+
+      document
+        .getElementById("generateBtn")
+        .addEventListener("click", function (e) {
+          generate();
+          e.preventDefault();
+        });
+
+      window.addEventListener("keydown", function (e) {
+        if (e.keyCode == 32) generate();
+      });
+
+      window.addEventListener("mousemove", function (e) {
+        worldYAngle = -(0.5 - e.clientX / window.innerWidth) * 180;
+        worldXAngle = (0.5 - e.clientY / window.innerHeight) * 180;
+        //worldXAngle = .1 * ( e.clientY - .5 * window.innerHeight );
+        //worldYAngle = .1 * ( e.clientX - .5 * window.innerWidth );
+        updateView();
+      });
+
+      window.addEventListener("touchmove", function (e) {
+        var ptr = e.changedTouches.length;
+        while (ptr--) {
+          var touch = e.changedTouches[ptr];
+          worldYAngle = -(0.5 - touch.pageX / window.innerWidth) * 180;
+          worldXAngle = (0.5 - touch.pageY / window.innerHeight) * 180;
+          updateView();
+        }
+        e.preventDefault();
+      });
+
+      function generate() {
+        objects = [];
+        if (world.hasChildNodes()) {
+          while (world.childNodes.length >= 1) {
+            world.removeChild(world.firstChild);
+          }
+        }
+        computedWeights = [];
+        var total = 0;
+        for (var j = 0; j < textures.length; j++) {
+          if (textures[j].weight > 0) {
+            total += textures[j].weight;
+          }
+        }
+        var accum = 0;
+        for (var j = 0; j < textures.length; j++) {
+          if (textures[j].weight > 0) {
+            var w = textures[j].weight / total;
+            computedWeights.push({
+              src: textures[j].file,
+              min: accum,
+              max: accum + w,
+            });
+            accum += w;
+          }
+        }
+        for (var j = 0; j < 5; j++) {
+          objects.push(createCloud());
+        }
+      }
+
+      function updateView() {
+        var t =
+          "translateZ( " +
+          d +
+          "px ) rotateX( " +
+          worldXAngle +
+          "deg) rotateY( " +
+          worldYAngle +
+          "deg)";
+        world.style.webkitTransform = world.style.MozTransform = world.style.oTransform = world.style.transform = t;
+      }
+
+      function onContainerMouseWheel(event) {
+        event = event ? event : window.event;
+        d = d - (event.detail ? event.detail * -5 : event.wheelDelta / 8);
+        updateView();
+      }
+
+      function orientationhandler(e) {
+        if (!e.gamma && !e.beta) {
+          e.gamma = -(e.x * (180 / Math.PI));
+          e.beta = -(e.y * (180 / Math.PI));
+        }
+
+        var x = e.gamma;
+        var y = e.beta;
+
+        worldXAngle = y;
+        worldYAngle = x;
+        updateView();
+      }
+
+      function update() {
+        for (var j = 0; j < layers.length; j++) {
+          var layer = layers[j];
+          layer.data.a += layer.data.speed;
+          var t =
+            "translateX( " +
+            layer.data.x +
+            "px ) translateY( " +
+            layer.data.y +
+            "px ) translateZ( " +
+            layer.data.z +
+            "px ) rotateY( " +
+            -worldYAngle +
+            "deg ) rotateX( " +
+            -worldXAngle +
+            "deg ) rotateZ( " +
+            layer.data.a +
+            "deg ) scale( " +
+            layer.data.s +
+            ")";
+          layer.style.webkitTransform = layer.style.MozTransform = layer.style.oTransform = layer.style.transform = t;
+          //layer.style.webkitFilter = 'blur(5px)';
+        }
+
+        requestAnimationFrame(update);
+      }
+
+      update();
+    </script>
+  </body>
+</html>
